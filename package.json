@@ -1,6 +1,6 @@
 {
   "name": "make-it",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Make-It is a useful tool for creating TypeScript class from Json object.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -36,9 +36,9 @@
     "typescript": "^4.0.5"
   },
   "dependencies": {
-    "basecript": "^1.0.0"
+    "basecript": "^1.0.2"
   },
-  "license": "SEE LICENSE IN LICENSE.",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/hooshkar/make-it/issues"
   },

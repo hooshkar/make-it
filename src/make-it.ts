@@ -1,7 +1,7 @@
 /* eslint-disable prefer-rest-params */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "reflect-metadata";
-import { Exception, ClassType, argsNoUndefined } from "basecript";
+import { Exception, ClassType, ArgumentsCounter } from "basecript";
 import { Maker } from "./maker";
 import { IMap } from "./map";
 
@@ -9,7 +9,7 @@ export const MakeItKey = "MAKE-IT";
 
 export function mapping(map: IMap) {
   return (target: unknown, key: string | symbol): void => {
-    if (argsNoUndefined(arguments) > 2) {
+    if (ArgumentsCounter(arguments, undefined) > 2) {
       throw new Exception(`Decorator '${MakeItKey}' is for properties only.`);
     }
     const constructor = (target as any).constructor;
