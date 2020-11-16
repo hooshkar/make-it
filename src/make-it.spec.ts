@@ -1,10 +1,12 @@
 import 'reflect-metadata';
+import { start } from 'repl';
 import { makeIt, mapping } from './make-it';
 
 class Person {
     id!: string;
     name!: string;
     child!: Person;
+    state?: boolean;
 }
 
 test('basic', () => {
@@ -15,6 +17,26 @@ test('basic', () => {
     expect(makeIt(Person, { id: '1', name: 'ali' })).toStrictEqual(ali);
     expect(makeIt(Object, { id: '1', name: 'ali' })).toEqual(ali);
     expect(makeIt(Object, { id: '1', name: 'ali' })).not.toStrictEqual(ali);
+});
+
+test('basic', () => {
+    const ali = new Person();
+    ali.id = '1';
+    ali.name = 'ali';
+    ali.state = undefined;
+
+    expect(makeIt(Person, { id: '1', name: 'ali' })).toEqual(ali);
+    expect(makeIt(Person, { id: '1', name: 'ali' })).not.toStrictEqual(ali);
+});
+
+test('basic', () => {
+    const ali = new Person();
+    ali.id = '1';
+    ali.name = 'ali';
+    ali.state = false;
+
+    expect(makeIt(Person, { id: '1', name: 'ali', state: false })).toStrictEqual(ali);
+    expect(makeIt(Person, { id: '1', name: 'ali', start: true })).not.toEqual(ali);
 });
 
 test('nested', () => {

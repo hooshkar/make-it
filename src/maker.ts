@@ -17,7 +17,7 @@ export class Maker {
         return this._maps.get(key);
     }
 
-    make<T extends any>(constructor?: ClassType<T>, pool?: any): T {
+    make<T>(constructor?: ClassType<T>, pool?: any): T {
         const made: T | any = constructor === null || constructor === undefined ? {} : new constructor();
         const keys: (string | symbol)[] = [];
         keys.push(...this._maps.keys());
@@ -30,7 +30,7 @@ export class Maker {
             if (!type && pool) {
                 type = Reflect.getMetadata('design:type', pool, key);
             }
-            let value = pool && pool[key] ? pool[key] : undefined;
+            let value = pool ? pool[key] : undefined;
             if (!value && map && map.default) {
                 value = map.default.prototype ? new map.default() : map.default;
             }
