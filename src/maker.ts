@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ClassType } from 'basecript';
 import { MakeItKey } from './make-it';
 import { IMap } from './map';
@@ -17,7 +18,7 @@ export class Maker {
         return this._maps.get(key);
     }
 
-    make<T>(constructor?: ClassType<T>, pool?: any): T {
+    make<T>(constructor?: ClassType<T>, pool?: unknown): T {
         const made: T | any = constructor === null || constructor === undefined ? {} : new constructor();
         const keys: (string | symbol)[] = [];
         keys.push(...this._maps.keys());
