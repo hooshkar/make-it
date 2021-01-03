@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ClassType } from 'basecript';
+import { ClassType } from './class-type';
 import { MakeItKey } from './make-it';
 import { IMap } from './map';
 

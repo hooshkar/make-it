@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import { start } from 'repl';
 import { makeIt, mapping } from './make-it';
 
 class Person {

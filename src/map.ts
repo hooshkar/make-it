@@ -1,4 +1,5 @@
-import { ClassType } from 'basecript';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ClassType } from './class-type';
 
 export interface IMap<T = any> {
     property?: string | symbol;
