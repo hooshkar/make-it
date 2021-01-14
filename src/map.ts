@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ClassType } from './class-type';
 
-export interface IMap<T = any> {
-    property?: string | symbol;
-    type?: ClassType<T>;
+export interface IMap<T = unknown> {
+    property?: string;
     default?: T;
-    nested?: boolean;
-    undefined?: boolean;
+    nested?: 'object' | 'array';
+    type?: ClassType<T>;
+    optional?: boolean;
 }

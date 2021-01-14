@@ -1,54 +1,89 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { exception } from 'console';
 import { ClassType } from './class-type';
-import { MakeItKey } from './make-it';
+import { MakeItArray, MakeIt } from './make-it';
 import { IMap } from './map';
 
 export class Maker {
-    private readonly _maps: Map<string | symbol, IMap> = new Map<string | symbol, IMap>();
+    private readonly _maps: Map<string, IMap> = new Map<string, IMap>();
+    private _strict = false;
 
-    has(key: string | symbol): boolean {
-        return this._maps.has(key);
-    }
-
-    set(key: string | symbol, map: IMap): void {
+    set(key: string, map: IMap): void {
         this._maps.set(key, map);
     }
 
-    get(key: string | symbol): IMap | undefined {
+    get(key: string): IMap | undefined {
         return this._maps.get(key);
     }
 
-    make<T>(constructor?: ClassType<T>, pool?: unknown): T {
-        const made: T | any = constructor === null || constructor === undefined ? {} : new constructor();
-        const keys: (string | symbol)[] = [];
-        keys.push(...this._maps.keys());
-        if (pool) keys.push(...Object.keys(pool).filter((k) => !keys.includes(k)));
+    strict(): void {
+        this._strict = true;
+    }
 
+    has(key: string): boolean {
+        return this._maps.has(key);
+    }
+
+    make<T>(constructor: ClassType, pool: unknown, ...args: unknown[]): T {
+        if (!constructor) {
+            throw exception(`the 'constructor' parameter is required.`);
+        }
+        if (constructor instanceof Array) {
+            throw exception(
+                `the 'constructor' parameter should not be 'Array' type. please set 'constructor' to type of array items.`,
+            );
+        }
+        if (constructor === String || constructor === Number || constructor === Boolean) {
+            return <T>pool;
+        }
+        const made: T = <T>new constructor(...args);
+        if (typeof pool !== 'object') {
+            return made;
+        }
+        const keys: string[] = [];
+        keys.push(...this._maps.keys());
+        if (pool && !this._strict) {
+            keys.push(...Object.keys(pool).filter((k) => !keys.includes(k)));
+        }
         keys.forEach((key) => {
             const map = this._maps.get(key);
-            const property = map && map.property ? map.property : key;
-            let type: ClassType<any> = map && map.type ? map.type : Reflect.getMetadata('design:type', made, key);
-            if (!type && pool) {
-                type = Reflect.getMetadata('design:type', pool, key);
+            const property = map?.property ? map.property : key;
+            let value = pool ? pool[property] : undefined;
+            switch (map?.nested) {
+                case 'array': {
+                    if (Array.isArray(value) && map?.type) {
+                        value = MakeItArray(map.type, value);
+                    }
+                    break;
+                }
+                case 'object': {
+                    if (typeof value === 'object' && map?.type) {
+                        value = MakeIt(map.type, value);
+                    }
+                    break;
+                }
             }
-            let value = pool ? pool[key] : undefined;
-            if (!value && map && map.default) {
-                value = map.default.prototype ? new map.default() : map.default;
+            if (map?.default && !value) {
+                value = map.default;
             }
-            if (value !== undefined || (map && map.undefined)) {
-                made[property] = type && map && map.nested && value ? this.makeNested(type, value) : value;
+            if (value === undefined && map?.optional === true) {
+                return;
             }
+            made[key] = value;
         });
 
         return made;
     }
 
-    private makeNested<T>(constructor: ClassType<T>, pool?: any): T {
-        let maker: Maker | undefined =
-            pool && pool.constructor ? Reflect.getMetadata(MakeItKey, pool.constructor) : undefined;
-        if (maker === undefined)
-            maker = constructor ? Reflect.getMetadata(MakeItKey, (new constructor() as any).constructor) : undefined;
-        if (maker === undefined) maker = new Maker();
-        return maker.make(constructor, pool);
+    makeArray<T>(constructor: ClassType, pool: unknown, ...args: unknown[]): T[] {
+        if (Array.isArray(pool)) {
+            if (constructor === String || constructor === Number || constructor === Boolean) {
+                return pool;
+            }
+            return pool.map((p) => {
+                return <T>this.make(constructor, p, ...args);
+            });
+        } else {
+            throw exception(`the 'pool' data does not match to array signature.`);
+        }
     }
 }

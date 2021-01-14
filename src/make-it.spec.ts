@@ -1,110 +1,90 @@
 import 'reflect-metadata';
-import { makeIt, mapping } from './make-it';
+import { MakeIt } from './make-it';
+import { MakeItMap } from './decorator';
 
 class Person {
-    id!: string;
-    name!: string;
-    child!: Person;
+    id: number;
+    name: string;
+    @MakeItMap({ optional: true, nested: 'object', type: Person })
+    parent: Person;
+    @MakeItMap({ optional: true, nested: 'array', type: Person })
+    children?: Person[];
     state?: boolean;
+    @MakeItMap({ optional: true, nested: 'array', type: String })
+    cats?: string[];
 }
 
 test('basic', () => {
     const ali = new Person();
-    ali.id = '1';
+    ali.id = 1;
     ali.name = 'ali';
 
-    expect(makeIt(Person, { id: '1', name: 'ali' })).toStrictEqual(ali);
-    expect(makeIt(Object, { id: '1', name: 'ali' })).toEqual(ali);
-    expect(makeIt(Object, { id: '1', name: 'ali' })).not.toStrictEqual(ali);
+    expect(MakeIt(Person, { id: 1, name: 'ali' })).toStrictEqual(ali);
+    expect(MakeIt(Object, { id: 1, name: 'ali' })).toEqual(ali);
+    expect(MakeIt(Object, { id: 1, name: 'ali' })).not.toStrictEqual(ali);
 });
 
-test('basic', () => {
+test('basic value', () => {
     const ali = new Person();
-    ali.id = '1';
-    ali.name = 'ali';
-    ali.state = undefined;
-
-    expect(makeIt(Person, { id: '1', name: 'ali' })).toEqual(ali);
-    expect(makeIt(Person, { id: '1', name: 'ali' })).not.toStrictEqual(ali);
-});
-
-test('basic', () => {
-    const ali = new Person();
-    ali.id = '1';
+    ali.id = 1;
     ali.name = 'ali';
     ali.state = false;
 
-    expect(makeIt(Person, { id: '1', name: 'ali', state: false })).toStrictEqual(ali);
-    expect(makeIt(Person, { id: '1', name: 'ali', start: true })).not.toEqual(ali);
+    expect(MakeIt(Person, { id: 1, name: 'ali', state: false })).toStrictEqual(ali);
+    expect(MakeIt(Person, { id: 1, name: 'ali', start: true })).not.toEqual(ali);
 });
 
-test('nested', () => {
+test('undefined value', () => {
     const ali = new Person();
-    ali.id = '1';
+    ali.id = 1;
+    ali.name = 'ali';
+    ali.state = undefined;
+
+    const built = MakeIt(Person, { id: 1, name: 'ali' });
+
+    expect(built).toEqual(ali);
+    expect(built).not.toStrictEqual(ali);
+});
+
+test('object field', () => {
+    const ali = new Person();
+    ali.id = 1;
     ali.name = 'ali';
 
     const mohammad = new Person();
-    mohammad.id = '2';
+    mohammad.id = 2;
     mohammad.name = 'mohammad';
 
-    ali.child = mohammad;
+    ali.parent = mohammad;
 
-    expect(
-        makeIt(Person, {
-            id: '1',
-            name: 'ali',
-            child: { id: '2', name: 'mohammad' },
-        }),
-    ).toEqual(ali);
-    expect(
-        makeIt(Person, {
-            id: '1',
-            name: 'ali',
-            child: { id: '2', name: 'mohammad' },
-        }),
-    ).not.toStrictEqual(ali);
-    expect(
-        makeIt(Person, {
-            id: '1',
-            name: 'ali',
-            child: { id: '2', name: 'mohammad' },
-        }).child,
-    ).toEqual(ali.child);
-    expect(
-        makeIt(Person, {
-            id: '1',
-            name: 'ali',
-            child: { id: '2', name: 'mohammad' },
-        }).child,
-    ).not.toStrictEqual(ali.child);
+    const built = MakeIt(Person, {
+        id: 1,
+        name: 'ali',
+        parent: { id: 2, name: 'mohammad' },
+    });
+
+    expect(built).toStrictEqual(ali);
+    expect(built.parent).toStrictEqual(ali.parent);
 });
 
-class PersonMap {
-    @mapping({ default: 0 })
-    id!: string;
-    @mapping({ property: 'name', default: 'ali' })
-    name!: string;
-    @mapping({ nested: true, type: Person })
-    child!: PersonMap;
-}
-
-test('mapping', () => {
+test('array field', () => {
     const ali = new Person();
-    ali.id = '1';
+    ali.id = 1;
     ali.name = 'ali';
+    ali.cats = ['pishy', 'mishy'];
 
     const mohammad = new Person();
-    mohammad.id = '2';
+    mohammad.id = 2;
     mohammad.name = 'mohammad';
 
-    ali.child = mohammad;
+    ali.children = [mohammad];
 
-    const personMap = new PersonMap();
-    personMap.id = '1';
-    personMap.child = new PersonMap();
-    personMap.child.id = '2';
-    personMap.child.name = 'mohammad';
+    const built = MakeIt(Person, {
+        id: 1,
+        name: 'ali',
+        cats: ['pishy', 'mishy'],
+        children: [{ id: 2, name: 'mohammad' }],
+    });
 
-    expect(makeIt(Person, personMap)).toStrictEqual(ali);
-    expect(makeIt(Person, personMap).child).toStrictEqual(ali.child);
+    expect(built).toStrictEqual(ali);
 });
