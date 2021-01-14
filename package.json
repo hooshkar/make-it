@@ -1,6 +1,6 @@
 {
   "name": "make-it",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Make-It is a useful tool for creating TypeScript class from Json object.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
